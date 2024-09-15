@@ -18,6 +18,7 @@ from emmet.api.routes.molecules.molecules.resources import (
 from emmet.api.routes.molecules.partial_charges.resources import charges_resource
 from emmet.api.routes.molecules.partial_spins.resources import spins_resource
 from emmet.api.routes.molecules.bonds.resources import bonding_resource
+from emmet.api.routes.molecules.electric.resources import electric_multipole_resource
 from emmet.api.routes.molecules.metal_binding.resources import metal_binding_resource
 from emmet.api.routes.molecules.orbitals.resources import orbitals_resource
 from emmet.api.routes.molecules.redox.resources import redox_resource
@@ -30,10 +31,7 @@ from emmet.api.routes.legacy.jcesr.resources import jcesr_resource
 resources = {}
 
 default_settings = MAPISettings()
-
-db_uri = os.environ.get("MPCONTRIBS_MONGO_HOST", None)
-db_version = default_settings.DB_VERSION
-db_suffix = os.environ["MAPI_DB_NAME_SUFFIX"]
+db_uri = os.environ.get("MPMOLECULES_MONGO_HOST", None)
 
 if db_uri:
     # allow db_uri to be set with a different protocol scheme
@@ -81,6 +79,13 @@ if db_uri:
         database="mp_molecules",
         key="property_id",
         collection_name="molecules_bonds",
+    )
+
+    multipole_store = MongoURIStore(
+        uri=db_uri,
+        database="mp_molecules",
+        key="property_id",
+        collection_name="molecules_multipole",
     )
 
     metal_binding_store = MongoURIStore(
@@ -135,51 +140,51 @@ else:
 
 mp_molecules_resources = list()
 
-# Tasks
-mp_molecules_resources.extend(
-    [
-        task_resource(task_store),
-        task_deprecation_resource(task_store),
-        trajectory_resource(task_store),
-    ]
-)
-
-# Assoc
-mp_molecules_resources.extend(
-    [mol_assoc_resource(assoc_store), find_molecule_assoc_resource(assoc_store)]
-)
-
-# Molecules
-mp_molecules_resources.extend(
-    [
-        molecules_resource(mol_store),
-        find_molecule_resource(mol_store),
-    ]
-)
-
-# Partial charges
-mp_molecules_resources.extend([charges_resource(charges_store)])
-
-# Partial spins
-mp_molecules_resources.extend([spins_resource(spins_store)])
-
-# Bonds
-mp_molecules_resources.extend([bonding_resource(bonds_store)])
-
-# Metal binding
-mp_molecules_resources.extend([metal_binding_resource(metal_binding_store)])
-
-# Orbitals
-mp_molecules_resources.extend([orbitals_resource(orbitals_store)])
-
-# Redox
-mp_molecules_resources.extend([redox_resource(redox_store)])
-
-# Thermo
-mp_molecules_resources.extend([thermo_resource(thermo_store)])
-
-# Vibes
-mp_molecules_resources.extend([vibration_resource(vibes_store)])
+## Tasks
+# mp_molecules_resources.extend(
+#    [
+#        task_resource(task_store),
+#        task_deprecation_resource(task_store),
+#        trajectory_resource(task_store),
+#    ]
+# )
+#
+## Assoc
+# mp_molecules_resources.extend(
+#    [mol_assoc_resource(assoc_store), find_molecule_assoc_resource(assoc_store)]
+# )
+#
+## Molecules
+# mp_molecules_resources.extend(
+#    [
+#        molecules_resource(mol_store),
+#        find_molecule_resource(mol_store),
+#    ]
+# )
+#
+## Partial charges
+# mp_molecules_resources.extend([charges_resource(charges_store)])
+#
+## Partial spins
+# mp_molecules_resources.extend([spins_resource(spins_store)])
+#
+## Bonds
+# mp_molecules_resources.extend([bonding_resource(bonds_store)])
+#
+## Metal binding
+# mp_molecules_resources.extend([metal_binding_resource(metal_binding_store)])
+#
+## Orbitals
+# mp_molecules_resources.extend([orbitals_resource(orbitals_store)])
+#
+## Redox
+# mp_molecules_resources.extend([redox_resource(redox_store)])
+#
+## Thermo
+# mp_molecules_resources.extend([thermo_resource(thermo_store)])
+#
+## Vibes
+# mp_molecules_resources.extend([vibration_resource(vibes_store)])
 
 # Summary
 mp_molecules_resources.extend([summary_resource(summary_store)])

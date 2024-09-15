@@ -1,22 +1,22 @@
 import os
 
+from monty.serialization import dumpfn, loadfn
+from monty.tempfile import ScratchDir
+from pymatgen.core.structure import Structure
+
 from emmet.api.core.settings import MAPISettings
 from emmet.api.routes.materials.materials.query_operators import (
-    FormulaQuery,
     ChemsysQuery,
-    ElementsQuery,
     DeprecationQuery,
-    SymmetryQuery,
-    MultiTaskIDQuery,
-    MultiMaterialIDQuery,
+    ElementsQuery,
     FindStructureQuery,
     FormulaAutoCompleteQuery,
+    FormulaQuery,
+    MultiMaterialIDQuery,
+    MultiTaskIDQuery,
+    SymmetryQuery,
 )
-from monty.tempfile import ScratchDir
-from monty.serialization import loadfn, dumpfn
-
 from emmet.core.symmetry import CrystalSystem
-from pymatgen.core.structure import Structure
 
 
 def test_formula_query():
@@ -162,7 +162,7 @@ def test_find_structure_query():
     op = FindStructureQuery()
 
     structure = Structure.from_file(
-        os.path.join(MAPISettings().TEST_FILES, "Si_mp_149.cif")
+        os.path.join(MAPISettings().TEST_FILES, "Si_mp_149.cif"), primitive=True
     )
     query = {
         "criteria": {"composition_reduced": dict(structure.composition.to_reduced_dict)}

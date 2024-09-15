@@ -41,15 +41,15 @@ jobs:
       - deploy
     strategy:
       matrix:
-        os: ["ubuntu-latest"] # TODO openbabel for windows
-        python-version: ["3.8"] # TODO numpy import error for pymatgen install in 3.10
+        os: ["ubuntu-latest"]
+        python-version: ["3.11"]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
 
       - name: Install Python dependencies
         shell: bash -l {0}
@@ -86,7 +86,7 @@ jobs:
         run: mkdocs build
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3.9.0
+        uses: peaceiris/actions-gh-pages@v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site

@@ -12,15 +12,18 @@ setup(
     url="https://github.com/materialsproject/emmet",
     packages=find_namespace_packages(include=["emmet.*"]),
     install_requires=[
-        "emmet-core[all]",
+        "numpy<2",
+        "emmet-core>=0.78.0rc1",
         "fastapi",
         "gunicorn",
         "boto3",
-        "maggma",
-        "ddtrace<2.1",
+        "maggma[api]",
+        "ddtrace",
         "setproctitle",
         "shapely",
         "asgi-logger",
+        "pymatgen-analysis-alloys>=0.0.3",
+        "pymatgen-analysis-defects>=2024.7.18",
     ],
     extras_require={
         "test": [

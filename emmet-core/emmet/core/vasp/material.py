@@ -1,18 +1,19 @@
 """ Core definition of a Materials Document """
-from typing import Dict, List, Mapping, Optional
-from emmet.core.base import EmmetMeta
 
-from pydantic import Field, BaseModel
+from typing import Dict, List, Mapping, Optional
+
+from pydantic import BaseModel, Field
 from pymatgen.analysis.structure_analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.entries.computed_entries import ComputedStructureEntry
 
+from emmet.core.base import EmmetMeta
 from emmet.core.material import MaterialsDoc as CoreMaterialsDoc
 from emmet.core.material import PropertyOrigin
 from emmet.core.settings import EmmetSettings
 from emmet.core.structure import StructureMetadata
+from emmet.core.tasks import TaskDoc
 from emmet.core.vasp.calc_types import CalcType, RunType, TaskType
-from emmet.core.vasp.task_valid import TaskDocument
 
 SETTINGS = EmmetSettings()
 
@@ -51,7 +52,7 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
     @classmethod
     def from_tasks(
         cls,
-        task_group: List[TaskDocument],
+        task_group: List[TaskDoc],
         structure_quality_scores: Dict[
             str, int
         ] = SETTINGS.VASP_STRUCTURE_QUALITY_SCORES,
@@ -90,6 +91,10 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
             else structure_optimizations
         )
 
+        validity_check = [doc for doc in structure_calcs if doc.is_valid]
+        if not validity_check:
+            raise ValueError("Group must contain at least one valid task")
+
         # Material ID
         possible_mat_ids = [task.task_id for task in structure_optimizations]
 
@@ -101,7 +106,7 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
         # Always prefer a static over a structure opt
         structure_task_quality_scores = {"Structure Optimization": 1, "Static": 2}
 
-        def _structure_eval(task: TaskDocument):
+        def _structure_eval(task: TaskDoc):
             """
             Helper function to order structures optimization and statics calcs by
             - Functional Type
@@ -113,7 +118,12 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
             task_run_type = task.run_type
             _SPECIAL_TAGS = ["LASPH", "ISPIN"]
             special_tags = sum(
-                task.input.parameters.get(tag, False) for tag in _SPECIAL_TAGS
+                (
+                    task.input.parameters.get(tag, False)
+                    if task.input.parameters
+                    else False
+                )
+                for tag in _SPECIAL_TAGS
             )
 
             return (
@@ -155,7 +165,7 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
         # Always prefer a static over a structure opt
         entry_task_quality_scores = {"Structure Optimization": 1, "Static": 2}
 
-        def _entry_eval(task: TaskDocument):
+        def _entry_eval(task: TaskDoc):
             """
             Helper function to order entries and statics calcs by
             - Spin polarization
@@ -165,7 +175,12 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
 
             _SPECIAL_TAGS = ["LASPH", "ISPIN"]
             special_tags = sum(
-                task.input.parameters.get(tag, False) for tag in _SPECIAL_TAGS
+                (
+                    task.input.parameters.get(tag, False)
+                    if task.input.parameters
+                    else False
+                )
+                for tag in _SPECIAL_TAGS
             )
 
             return (
@@ -192,6 +207,8 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
                 entry.data["task_id"] = entry.entry_id
                 entry.data["material_id"] = material_id
                 entry.entry_id = "{}-{}".format(material_id, rt.value)
+                entry.parameters["is_hubbard"] = best_task_doc.input.is_hubbard
+                entry.parameters["hubbards"] = best_task_doc.input.hubbards
                 entries[rt] = entry
 
         if RunType.GGA not in entries and RunType.GGA_U not in entries:
@@ -222,7 +239,7 @@ class MaterialsDoc(CoreMaterialsDoc, StructureMetadata):
     @classmethod
     def construct_deprecated_material(
         cls,
-        task_group: List[TaskDocument],
+        task_group: List[TaskDoc],
         commercial_license: bool = True,
     ) -> "MaterialsDoc":
         """
