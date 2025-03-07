@@ -1,5 +1,5 @@
-FROM materialsproject/devops:python-3.1013.18 AS base
-RUN apt-get update && apt-get install -y --no-install-recommends libopenblas-dev libjpeg62 && apt-get clean
+FROM materialsproject/devops:python-3.1111.0 AS base
+RUN apt-get update && apt-get install -y --no-install-recommends libopenblas-dev libjpeg62 curl && apt-get clean
 
 FROM base AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends gcc git g++ cmake make libsnappy-dev wget && apt-get clean
@@ -18,7 +18,7 @@ RUN wget -q https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-
   chmod +x wait-for-it.sh && mv wait-for-it.sh /root/.local/bin/
 
 FROM base
-COPY --from=builder /root/.local/lib/python3.10/site-packages /root/.local/lib/python3.10/site-packages
+COPY --from=builder /root/.local/lib/python3.11/site-packages /root/.local/lib/python3.11/site-packages
 COPY --from=builder /root/.local/bin /root/.local/bin
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libsnappy* /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /emmet-api /emmet-api
@@ -36,14 +36,18 @@ ENV PATH=/root/.local/bin:$PATH \
   DD_TRACE_HOST=localhost:8126 \
   DD_SERVICE=next-gen-api \
   DD_ENV=prod \
-  DD_VERSION=$VERSION
+  DD_VERSION=$VERSION \
+  DD_PROFILING_ENABLED=true \
+  DD_LOGS_INJECTION=true \
+  DD_TRACE_SAMPLE_RATE=1
 
 COPY app.py .
 COPY material_resources.py .
 COPY molecule_resources.py .
 COPY defect_resources.py .
 COPY start.sh .
-RUN chmod +x start.sh
+COPY healthcheck.sh .
+RUN chmod +x start.sh healthcheck.sh
 
 LABEL com.datadoghq.ad.logs='[{"source": "gunicorn", "service": "next-gen-api"}]'
 

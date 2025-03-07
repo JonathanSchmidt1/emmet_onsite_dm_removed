@@ -8,40 +8,42 @@ aioitertools==0.12.0
     # via maggma
 annotated-types==0.7.0
     # via pydantic
-ase==3.23.0
-    # via matcalc
-attrs==24.2.0
+ase==3.24.0
+    # via
+    #   matcalc
+    #   pymatgen-analysis-diffusion
+attrs==25.1.0
     # via
     #   jsonlines
     #   jsonschema
     #   referencing
-bcrypt==4.2.0
+bcrypt==4.3.0
     # via paramiko
-boto3==1.35.16
+boto3==1.37.8
     # via maggma
-botocore==1.35.16
+botocore==1.37.8
     # via
     #   boto3
     #   s3transfer
-certifi==2024.8.30
+certifi==2025.1.31
     # via requests
 cffi==1.17.1
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.2
+charset-normalizer==3.4.1
     # via requests
-contourpy==1.3.0
+contourpy==1.3.1
     # via matplotlib
-cryptography==43.0.1
+cryptography==44.0.2
     # via paramiko
 cycler==0.12.1
     # via matplotlib
-dnspython==2.6.1
+dnspython==2.7.0
     # via
     #   maggma
     #   pymongo
-emmet-core[all]==0.84.1
+emmet-core[all]==0.84.5
     # via
     #   emmet-builders (setup.py)
     #   mp-api
@@ -49,15 +51,17 @@ exceptiongroup==1.2.2
     # via pytest
 fasteners==0.19
     # via mdanalysis
-fonttools==4.53.1
+fonttools==4.56.0
     # via matplotlib
 griddataformats==1.0.2
     # via mdanalysis
-h5py==3.11.0
+h5py==3.13.0
     # via phonopy
-idna==3.8
+idna==3.10
     # via requests
-inflect==7.4.0
+imageio==2.37.0
+    # via scikit-image
+inflect==7.5.0
     # via robocrys
 iniconfig==2.0.0
     # via pytest
@@ -76,41 +80,50 @@ jsonlines==4.0.0
     # via maggma
 jsonschema==4.23.0
     # via maggma
-jsonschema-specifications==2023.12.1
+jsonschema-specifications==2024.10.1
     # via jsonschema
-kiwisolver==1.4.7
+kiwisolver==1.4.8
     # via matplotlib
 latexcodec==3.0.0
     # via pybtex
-maggma==0.69.3
+lazy-loader==0.4
+    # via scikit-image
+maggma==0.71.4
     # via
     #   emmet-builders (setup.py)
     #   mp-api
 matcalc==0.0.4
     # via emmet-core
-matminer==0.9.2
+matminer==0.9.3
     # via
     #   emmet-builders (setup.py)
     #   robocrys
-matplotlib==3.9.2
+matplotlib==3.10.1
     # via
     #   ase
     #   mdanalysis
+    #   pathsimanalysis
     #   phonopy
     #   pymatgen
+    #   seaborn
     #   solvation-analysis
 mda-xdrlib==0.2.0
     # via mdanalysis
-mdanalysis==2.7.0
+mdahole2==0.5.0
+    # via mdanalysis
+mdanalysis==2.8.0
     # via
     #   emmet-builders (setup.py)
     #   emmet-core
+    #   mdahole2
+    #   pathsimanalysis
     #   solvation-analysis
+    #   waterdynamics
 mmtf-python==1.1.3
     # via mdanalysis
-mongomock==4.1.2
+mongomock==4.3.0
     # via maggma
-monty==2024.7.30
+monty==2025.3.3
     # via
     #   emmet-core
     #   maggma
@@ -118,23 +131,28 @@ monty==2024.7.30
     #   mp-api
     #   pymatgen
     #   robocrys
-more-itertools==10.5.0
+more-itertools==10.6.0
     # via inflect
-mp-api==0.42.1
+mp-api==0.45.3
     # via robocrys
+mp-pyrho==0.4.5
+    # via pymatgen-analysis-defects
 mpmath==1.3.0
     # via sympy
-mrcfile==1.5.3
+mrcfile==1.5.4
     # via griddataformats
 msgpack==1.1.0
     # via
     #   maggma
     #   mmtf-python
     #   mp-api
-networkx==3.3
+narwhals==1.29.1
+    # via plotly
+networkx==3.4.2
     # via
     #   pymatgen
     #   robocrys
+    #   scikit-image
 numpy==1.26.4
     # via
     #   ase
@@ -142,54 +160,71 @@ numpy==1.26.4
     #   emmet-core
     #   griddataformats
     #   h5py
+    #   imageio
     #   maggma
     #   matminer
     #   matplotlib
     #   mdanalysis
+    #   monty
     #   mrcfile
     #   pandas
+    #   pathsimanalysis
     #   patsy
     #   phonopy
     #   pymatgen
+    #   pymatgen-analysis-defects
+    #   pymatgen-analysis-diffusion
     #   rdkit
     #   robocrys
+    #   scikit-image
     #   scikit-learn
     #   scipy
+    #   seaborn
     #   seekpath
     #   shapely
     #   solvation-analysis
     #   spglib
     #   statsmodels
-orjson==3.10.7
+    #   symfc
+    #   tifffile
+    #   waterdynamics
+orjson==3.10.15
     # via maggma
-packaging==24.1
+packaging==24.2
     # via
+    #   lazy-loader
     #   matplotlib
     #   mdanalysis
     #   mongomock
     #   plotly
     #   pytest
+    #   scikit-image
     #   statsmodels
 palettable==3.3.3
     # via pymatgen
-pandas==2.2.2
+pandas==2.2.3
     # via
     #   maggma
     #   matminer
     #   pymatgen
+    #   seaborn
     #   solvation-analysis
     #   statsmodels
-paramiko==3.4.1
+paramiko==3.5.1
     # via sshtunnel
-patsy==0.5.6
+pathsimanalysis==1.2.0
+    # via mdanalysis
+patsy==1.0.1
     # via statsmodels
-phonopy==2.27.0
+phonopy==2.38.0
     # via matcalc
-pillow==10.4.0
+pillow==11.1.0
     # via
+    #   imageio
     #   matplotlib
     #   rdkit
-plotly==5.24.0
+    #   scikit-image
+plotly==6.0.0
     # via
     #   pymatgen
     #   solvation-analysis
@@ -204,41 +239,45 @@ pybtex==0.24.0
     #   robocrys
 pycparser==2.22
     # via cffi
-pydantic==2.9.1
+pydantic==2.10.6
     # via
     #   emmet-core
     #   maggma
     #   pydantic-settings
-pydantic-core==2.23.3
+pydantic-core==2.27.2
     # via pydantic
-pydantic-settings==2.5.0
+pydantic-settings==2.8.1
     # via
     #   emmet-core
     #   maggma
-pydash==8.0.3
+pydash==8.0.5
     # via maggma
-pymatgen==2024.4.13
+pymatgen==2025.2.18
     # via
     #   emmet-core
     #   matcalc
     #   matminer
     #   mp-api
+    #   mp-pyrho
     #   pymatgen-analysis-alloys
+    #   pymatgen-analysis-defects
     #   pymatgen-analysis-diffusion
     #   robocrys
-pymatgen-analysis-alloys==0.0.6
+pymatgen-analysis-alloys==0.0.7
     # via emmet-core
-pymatgen-analysis-diffusion==2023.8.15
+pymatgen-analysis-defects==2025.1.18
     # via emmet-core
-pymongo==4.8.0
+pymatgen-analysis-diffusion==2024.7.15
+    # via emmet-core
+pymongo==4.10.1
     # via
     #   maggma
     #   matminer
 pynacl==1.5.0
     # via paramiko
-pyparsing==3.1.4
+pyparsing==3.2.1
     # via matplotlib
-pytest==8.3.3
+pytest==8.3.5
     # via solvation-analysis
 python-dateutil==2.9.0.post0
     # via
@@ -248,17 +287,19 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.0.1
     # via pydantic-settings
-pytz==2024.1
-    # via pandas
+pytz==2025.1
+    # via
+    #   mongomock
+    #   pandas
 pyyaml==6.0.2
     # via
     #   phonopy
     #   pybtex
-pyzmq==26.2.0
+pyzmq==26.2.1
     # via maggma
-rdkit==2024.3.5
+rdkit==2024.9.5
     # via solvation-analysis
-referencing==0.35.1
+referencing==0.36.2
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -267,45 +308,52 @@ requests==2.32.3
     #   matminer
     #   mp-api
     #   pymatgen
-robocrys==0.2.9
+robocrys==0.2.10
     # via emmet-core
-rpds-py==0.20.0
+rpds-py==0.23.1
     # via
     #   jsonschema
     #   referencing
-ruamel-yaml==0.18.6
+ruamel-yaml==0.18.10
     # via
     #   maggma
+    #   monty
     #   pymatgen
     #   robocrys
-ruamel-yaml-clib==0.2.8
+ruamel-yaml-clib==0.2.12
     # via ruamel-yaml
-s3transfer==0.10.2
+s3transfer==0.11.4
     # via boto3
-scikit-learn==1.5.1
+scikit-image==0.25.2
+    # via pymatgen-analysis-defects
+scikit-learn==1.6.1
     # via matminer
-scipy==1.14.1
+scipy==1.15.2
     # via
     #   ase
     #   griddataformats
     #   mdanalysis
+    #   pathsimanalysis
     #   pymatgen
     #   robocrys
+    #   scikit-image
     #   scikit-learn
     #   solvation-analysis
     #   statsmodels
+    #   symfc
+seaborn==0.13.2
+    # via pymatgen-analysis-diffusion
 seekpath==2.1.0
     # via emmet-core
 sentinels==1.0.0
     # via mongomock
-shapely==2.0.6
+shapely==2.0.7
     # via pymatgen-analysis-alloys
-six==1.16.0
+six==1.17.0
     # via
-    #   patsy
     #   pybtex
     #   python-dateutil
-smart-open==7.0.4
+smart-open==7.1.0
     # via mp-api
 solvation-analysis==0.4.1
     # via
@@ -317,31 +365,34 @@ spglib==2.5.0
     #   pymatgen
     #   robocrys
     #   seekpath
+    #   symfc
 sshtunnel==0.4.0
     # via maggma
-statsmodels==0.14.2
+statsmodels==0.14.4
     # via solvation-analysis
-sympy==1.13.2
+symfc==1.3.4
+    # via phonopy
+sympy==1.13.3
     # via
     #   matminer
     #   pymatgen
 tabulate==0.9.0
     # via pymatgen
-tenacity==9.0.0
-    # via plotly
 threadpoolctl==3.5.0
     # via
     #   mdanalysis
     #   scikit-learn
-tomli==2.0.1
+tifffile==2025.2.18
+    # via scikit-image
+tomli==2.2.1
     # via pytest
-tqdm==4.66.5
+tqdm==4.67.1
     # via
     #   maggma
     #   matminer
     #   mdanalysis
     #   pymatgen
-typeguard==4.3.0
+typeguard==4.4.2
     # via inflect
 typing-extensions==4.12.2
     # via
@@ -350,16 +401,19 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   pydash
+    #   referencing
     #   typeguard
-tzdata==2024.1
+tzdata==2025.1
     # via pandas
 uncertainties==3.2.2
     # via pymatgen
-urllib3==2.2.2
+urllib3==2.3.0
     # via
     #   botocore
     #   requests
-wrapt==1.16.0
+waterdynamics==1.2.0
+    # via mdanalysis
+wrapt==1.17.2
     # via smart-open
 
 # The following packages are considered to be unsafe in a requirements file:

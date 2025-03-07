@@ -5,44 +5,39 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
-from emmet.core.common import convert_datetime
-from emmet.core.mpid import MPID
-from emmet.core.structure import StructureMetadata
-from emmet.core.utils import utcnow
-from emmet.core.vasp.calc_types import (
-    CalcType,
-    calc_type,
-    TaskType,
-    run_type,
-    RunType,
-    task_type,
-)
-from emmet.core.vasp.calculation import (
-    CalculationInput,
-    Calculation,
-    PotcarSpec,
-    RunStatistics,
-    VaspObject,
-)
-from emmet.core.vasp.task_valid import TaskState
 from monty.json import MontyDecoder
 from monty.serialization import loadfn
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pymatgen.analysis.structure_analyzer import oxide_type
 from pymatgen.core.structure import Structure
 from pymatgen.core.trajectory import Trajectory
 from pymatgen.entries.computed_entries import ComputedEntry, ComputedStructureEntry
 from pymatgen.io.vasp import Incar, Kpoints, Poscar
 from pymatgen.io.vasp import Potcar as VaspPotcar
+
+from emmet.core.common import convert_datetime
+from emmet.core.mpid import MPID
+from emmet.core.structure import StructureMetadata
+from emmet.core.utils import utcnow
+from emmet.core.vasp.calc_types import (
+    CalcType,
+    RunType,
+    TaskType,
+    calc_type,
+    run_type,
+    task_type,
+)
+from emmet.core.vasp.calculation import (
+    Calculation,
+    CalculationInput,
+    PotcarSpec,
+    RunStatistics,
+    VaspObject,
+)
+from emmet.core.vasp.task_valid import TaskState
 
 monty_decoder = MontyDecoder()
 logger = logging.getLogger(__name__)
@@ -104,7 +99,7 @@ class OutputDoc(BaseModel):
     density: Optional[float] = Field(None, description="Density of in units of g/cc.")
     energy: Optional[float] = Field(None, description="Total Energy in units of eV.")
     forces: Optional[List[List[float]]] = Field(
-        None, description="The force on each atom in units of eV/A^2."
+        None, description="The force on each atom in units of eV/A."
     )
     stress: Optional[List[List[float]]] = Field(
         None, description="The stress on the cell in units of kB."
@@ -152,10 +147,10 @@ class OutputDoc(BaseModel):
         OutputDoc
             The calculation output summary.
         """
-        if calc_doc.output.ionic_steps is not None:
+        if calc_doc.output.ionic_steps:
             forces = calc_doc.output.ionic_steps[-1].forces
             stress = calc_doc.output.ionic_steps[-1].stress
-        elif trajectory is not None:
+        elif trajectory:
             ionic_steps = trajectory.frame_properties
             forces = ionic_steps[-1]["forces"]
             stress = ionic_steps[-1]["stress"]
@@ -430,9 +425,18 @@ class TaskDoc(StructureMetadata, extra="allow"):
         description="Timestamp for the most recent calculation for this task document",
     )
 
+    completed_at: Optional[datetime] = Field(
+        None, description="Timestamp for when this task was completed"
+    )
+
     batch_id: Optional[str] = Field(
         None,
         description="Identifier for this calculation; should provide rough information about the calculation origin and purpose.",
+    )
+
+    run_stats: Optional[Mapping[str, RunStatistics]] = Field(
+        None,
+        description="Summary of runtime statistics for each calculation in this task",
     )
 
     # Note that private fields are needed because TaskDoc permits extra info
@@ -978,9 +982,10 @@ def _parse_additional_json(dir_name: Path) -> Dict[str, Any]:
 def _get_max_force(calc_doc: Calculation) -> Optional[float]:
     """Get max force acting on atoms from a calculation document."""
     if calc_doc.output.ionic_steps:
-        forces: Optional[Union[np.ndarray, List]] = calc_doc.output.ionic_steps[
-            -1
-        ].forces
+        forces: Optional[Union[np.ndarray, List]] = None
+        if calc_doc.output.ionic_steps:
+            forces = calc_doc.output.ionic_steps[-1].forces
+
         structure = calc_doc.output.structure
         if forces:
             forces = np.array(forces)

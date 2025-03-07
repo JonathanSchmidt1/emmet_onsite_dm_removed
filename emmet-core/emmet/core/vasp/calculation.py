@@ -3,12 +3,13 @@
 # mypy: ignore-errors
 
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pymatgen.command_line.bader_caller import bader_analysis_from_path
 from pymatgen.command_line.chargemol_caller import ChargemolAnalysis
 from pymatgen.core.lattice import Lattice
@@ -301,7 +302,7 @@ class ElectronPhononDisplacedStructures(BaseModel):
     )
 
 
-class ElectronicStep(BaseModel, extra=Extra.allow):  # type: ignore
+class ElectronicStep(BaseModel):  # type: ignore
     """Document defining the information at each electronic step.
 
     Note, not all the information will be available at every step.
@@ -324,8 +325,10 @@ class ElectronicStep(BaseModel, extra=Extra.allow):  # type: ignore
     e_wo_entrp: Optional[float] = Field(None, description="The energy without entropy.")
     e_0_energy: Optional[float] = Field(None, description="The internal energy.")
 
+    model_config = ConfigDict(extra="allow")
 
-class IonicStep(BaseModel, extra=Extra.allow):  # type: ignore
+
+class IonicStep(BaseModel):  # type: ignore
     """Document defining the information at each ionic step."""
 
     e_fr_energy: Optional[float] = Field(None, description="The free energy.")
@@ -338,9 +341,20 @@ class IonicStep(BaseModel, extra=Extra.allow):  # type: ignore
     electronic_steps: Optional[List[ElectronicStep]] = Field(
         None, description="The electronic convergence steps."
     )
+    num_electronic_steps: Optional[int] = Field(
+        None, description="The number of electronic steps needed to reach convergence."
+    )
     structure: Optional[Structure] = Field(
         None, description="The structure at this step."
     )
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def set_elec_step_count(self):
+        if self.electronic_steps is not None:
+            self.num_electronic_steps = len(self.electronic_steps)
+        return self
 
 
 class CalculationOutput(BaseModel):
@@ -383,10 +397,6 @@ class CalculationOutput(BaseModel):
         description="The magnetization density, defined as total_mag/volume "
         "(units of A^-3)",
     )
-    dielectric: Optional[dict[str, list]] = Field(
-        None,
-        description="Energy of incident photons in ev and real and imaginary parts of the dielectric tensor",
-    )
     optical_absorption_coeff: Optional[list] = Field(
         None, description="Optical absorption coefficient in cm^-1"
     )
@@ -407,6 +417,9 @@ class CalculationOutput(BaseModel):
     )
     ionic_steps: Optional[List[IonicStep]] = Field(
         None, description="Energy, forces, structure, etc. for each ionic step"
+    )
+    num_electronic_steps: Optional[List[int]] = Field(
+        None, description="The number of electronic steps in each ionic step."
     )
     locpot: Optional[Dict[int, List[float]]] = Field(
         None, description="Average of the local potential along the crystal axes"
@@ -571,6 +584,19 @@ class CalculationOutput(BaseModel):
                 temp = str(elph_poscar.name).replace("POSCAR.T=", "").replace(".gz", "")
                 elph_structures["temperatures"].append(temp)
                 elph_structures["structures"].append(Structure.from_file(elph_poscar))
+
+        ionic_steps = (
+            vasprun.ionic_steps
+            if store_trajectory == StoreTrajectoryOption.NO
+            else None
+        )
+        num_elec_steps = None
+        if ionic_steps is not None:
+            num_elec_steps = [
+                len(ionic_step.get("electronic_steps", []) or [])
+                for ionic_step in ionic_steps
+            ]
+
         return cls(
             structure=structure,
             energy=vasprun.final_energy,
@@ -582,9 +608,8 @@ class CalculationOutput(BaseModel):
             frequency_dependent_dielectric=freq_dependent_diel,
             elph_displaced_structures=elph_structures,
             dos_properties=dosprop_dict,
-            ionic_steps=vasprun.ionic_steps
-            if store_trajectory == StoreTrajectoryOption.NO
-            else None,
+            ionic_steps=ionic_steps,
+            num_electronic_steps=num_elec_steps,
             locpot=locpot_avg,
             outcar=outcar_dict,
             run_stats=RunStatistics.from_outcar(outcar) if outcar else None,
@@ -748,7 +773,13 @@ class Calculation(CalculationBaseModel):
         volumetric_files = [] if volumetric_files is None else volumetric_files
         vasprun = Vasprun(vasprun_file, **vasprun_kwargs)
         outcar = Outcar(outcar_file)
-        contcar = Poscar.from_file(contcar_file)
+        if (
+            os.path.getsize(contcar_file) == 0
+            and vasprun.parameters.get("NELM", 60) == 1
+        ):
+            contcar = Poscar(vasprun.final_structure)
+        else:
+            contcar = Poscar.from_file(contcar_file)
         completed_at = str(datetime.fromtimestamp(vasprun_file.stat().st_mtime))
 
         output_file_paths = _get_output_file_paths(volumetric_files)

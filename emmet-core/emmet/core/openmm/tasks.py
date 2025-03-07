@@ -5,21 +5,20 @@ from __future__ import annotations
 import io
 from pathlib import Path
 from typing import Optional, Union
-import pandas as pd  # type: ignore[import-untyped]
 
 import openmm
+import pandas as pd  # type: ignore[import-untyped]
 from openmm import XmlSerializer
 from openmm.app import Simulation
 from openmm.app.pdbfile import PDBFile
-from emmet.core.vasp.task_valid import TaskState  # type: ignore[import-untyped]
-from pydantic import BaseModel, Field
-from pymatgen.core import Structure
+from pydantic import BaseModel, ConfigDict, Field
 
-from emmet.core.openff import MoleculeSpec, MDTaskDocument  # type: ignore[import-untyped]
+from emmet.core.openff import MDTaskDocument  # type: ignore[import-untyped]
 from emmet.core.openff.tasks import CompressedStr  # type: ignore[import-untyped]
+from emmet.core.vasp.task_valid import TaskState  # type: ignore[import-untyped]
 
 
-class CalculationInput(BaseModel, extra="allow"):  # type: ignore[call-arg]
+class CalculationInput(BaseModel):  # type: ignore[call-arg]
     """OpenMM input settings for a job, these are the attributes of the OpenMMMaker."""
 
     n_steps: Optional[int] = Field(
@@ -101,6 +100,8 @@ class CalculationInput(BaseModel, extra="allow"):  # type: ignore[call-arg]
         description="Whether to embed the trajectory blob in CalculationOutput.",
     )
 
+    model_config = ConfigDict(extra="allow")
+
 
 class CalculationOutput(BaseModel):
     """OpenMM calculation output files and extracted data."""
@@ -152,7 +153,7 @@ class CalculationOutput(BaseModel):
     @classmethod
     def from_directory(
         cls,
-        dir_name: Path | str,
+        dir_name: Union[Path, str],
         state_file_name: str,
         traj_file_name: str,
         elapsed_time: Optional[float] = None,
@@ -243,23 +244,19 @@ class OpenMMTaskDocument(MDTaskDocument):
         "task document.",
     )
 
-    interchange_meta: Optional[list[MoleculeSpec] | Structure | str] = Field(
-        None,
-        title="Interchange meta data",
-        description="Metadata for the interchange",
-    )
-
 
 class OpenMMInterchange(BaseModel):
     """An object to sit in the place of the Interchance object
     and serialize the OpenMM system, topology, and state."""
 
-    system: str = Field(None, description="An XML file representing the OpenMM system.")
-    state: str = Field(
+    system: Optional[str] = Field(
+        None, description="An XML file representing the OpenMM system."
+    )
+    state: Optional[str] = Field(
         None,
         description="An XML file representing the OpenMM state.",
     )
-    topology: str = Field(
+    topology: Optional[str] = Field(
         None,
         description="An XML file representing an OpenMM topology object."
         "This must correspond to the atom ordering in the system.",

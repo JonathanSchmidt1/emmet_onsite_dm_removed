@@ -1,9 +1,9 @@
 import warnings
 from itertools import groupby
-from typing import List
+from typing import List, Optional, Union
 
 import numpy as np
-from pydantic import Field
+from pydantic import Field, field_validator
 from pymatgen.analysis.xas.spectrum import XAS, site_weighted_spectrum
 from pymatgen.core.periodic_table import Element
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -50,10 +50,12 @@ class XASDoc(SpectrumDoc):
 
     spectrum_name: str = "XAS"
 
-    spectrum: XAS
+    spectrum: Optional[Union[XAS, dict]] = Field(
+        None, description="The XAS spectrum for this calculation."
+    )
 
-    task_ids: List[str] = Field(
-        ...,
+    task_ids: Optional[List[str]] = Field(
+        None,
         title="Calculation IDs",
         description="List of Calculations IDs used to make this XAS spectrum.",
     )
@@ -63,6 +65,14 @@ class XASDoc(SpectrumDoc):
     edge: Edge = Field(
         ..., title="Absorption Edge", description="The interaction edge for XAS."
     )
+
+    @field_validator("spectrum", mode="before")
+    @classmethod
+    def check_spectrum_non_positive_values(cls, v, eps=1.0e-12) -> XAS:
+        if isinstance(v, dict):
+            v["y"] = [y if y > 0.0 else abs(eps) for y in v["y"]]
+            v = XAS.from_dict(v)
+        return v
 
     @classmethod
     def from_spectrum(
@@ -228,7 +238,7 @@ def _is_missing_sites(spectra: List[XAS]):
     Determines if the collection of spectra are missing any indicies for the given element
     """
     structure = spectra[0].structure
-    element = spectra[0].absorbing_element
+    element = spectra[0].absorbing_element.symbol
 
     # Find missing symmeterically inequivalent sites
     symm_sites = SymmSites(structure)
